@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台北捷運美食探索：我們的期末報告</title>
+    <style>
+        /* 基礎與版面樣式 */
+        body {
+            font-family: 'Noto Sans TC', Arial, sans-serif;
+            background-color: #f7f7f7; /* 淺灰色背景增加對比 */
+            color: #333;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff; /* 內容區塊為白色 */
+            /* 增加層次感：圓角和陰影 */
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+        }
+
+        /* 標題與簡介 */
+        .intro-section {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .intro-section h2 {
+            font-size: 2.5em; 
+            color: #DC143C;
+            margin-bottom: 20px; /* 因為沒有圖片，可以調整這個間距來控制佈局 */
+        }
+        
+        .intro-section p {
+            font-size: 1.3em; /* 段落字體 */
+            text-align: justify;
+            text-indent: 2em;
+        }
+
+        /* 打字機動畫專用 CSS (保持不變) */
+        .typewriter-text {
+            color: transparent; 
+        }
+        .blinking-cursor {
+            opacity: 1;
+            animation: blink 0.7s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        /* === 捷運路線樣式 (互動性增強) === */
+
+        .mrt-lines-section {
+            margin-bottom: 40px;
+        }
+        .mrt-lines-section h3 {
+            font-size: 1.6em;
+        }
+
+        .mrt-line-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            font-size: 1.25em;
+            transition: all 0.2s ease-in-out; 
+            border-radius: 5px; /* 懸停時邊框更柔和 */
+        }
+        /* 列表懸停特效 */
+        .mrt-line-item:hover {
+            background-color: #fff0f0; 
+            transform: translateX(5px);
+            cursor: pointer;
+        }
+
+        .mrt-dot {
+            display: inline-block;
+            width: 15px; 
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .red-line-link {
+            text-decoration: none;
+            color: inherit;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        .red-line-link:hover {
+            background-color: #fee;
+        }
+        .red-line-text {
+            color: #DC143C;
+        }
+        .other-line-text {
+            color: #555;
+        }
+
+        /* === 報告團隊資訊 (格式與字體優化) === */
+        .members-section {
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+        .members-section h3 {
+             font-size: 1.6em;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            font-size: 1em; 
+        }
+        .info-table th, .info-table td {
+            padding: 10px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .info-table th {
+            width: 130px; 
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .member-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .member-item {
+            width: 100%; 
+            display: block; 
+            padding-right: 15px;
+            margin-bottom: 5px;
+            box-sizing: border-box;
+        }
+        .member-item .name {
+            font-weight: bold;
+            margin-right: 5px; 
+            color: #333;
+        }
+        .member-item .role {
+            font-size: 0.95em; 
+            color: #666;
+        }
+
+        /* 頁腳樣式 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.9em;
+            color: #999;
+        }
+        footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="intro-section">
+            <h2 id="animated-h2">
+                <span id="h2-text" class="typewriter-text">台北，美食隨心所欲！</span>
+                <span class="blinking-cursor">|</span>
+            </h2>
+            
+            <p id="animated-p">
+                <span id="p-text" class="typewriter-text">台北的魅力，在於四通八達的交通網絡。而最便利、最快速的美食地圖，就綴在每一條捷運線的出口。告別複雜的交通規則！只需一張悠遊卡，即可輕鬆穿越於城市各個角落，讓美食之旅變得前所未有的簡單，無論是想品嚐排隊名店還是尋覓巷弄美食，捷運站出口就是您的起點！</span>
+                <span class="blinking-cursor">|</span>
+            </p>
+        </div>
+
+        <div class="mrt-lines-section">
+            <h3>捷運路線概覽</h3>
+            <div class="mrt-line-item">
+                <span class="mrt-dot" style="background-color: #DC143C;"></span>
+                
+                <a href="red_line_stations.html" class="red-line-link">
+                    <span class="red-line-text">R 淡水信義線 (Tamsui-Xinyi Line) 紅線 / 淡水—象山</span>
+                    <span style="margin-left: 15px;">➡️➡️➡️➡️</span>
+                </a>
+            </div>
+
+            <div class="mrt-line-item">
+                <span class="mrt-dot" style="background-color: #FF8C00;"></span>
+                <span class="other-line-text">O 中和新蘆線 (Zhonghe-Xinlu Line) 橘線 / 中蘆線 / 南勢角—迴龍 / 蘆洲</span>
+            </div>
+
+            <div class="mrt-line-item">
+                <span class="mrt-dot" style="background-color: #008000;"></span>
+                <span class="other-line-text">G 松山新店線 (Songshan-Xindian Line) 綠線 / 松山—新店</span>
+            </div>
+
+            <div class="mrt-line-item">
+                <span class="mrt-dot" style="background-color: #0000FF;"></span>
+                <span class="other-line-text">BL 板南線 (Banqiao-Nangang Line) 板藍線 / 頂埔—南港展覽館</span>
+            </div>
+
+            <div class="mrt-line-item">
+                <span class="mrt-dot" style="background-color: #8B4513;"></span>
+                <span class="other-line-text">BR 文湖線 (Wenshan-Neihu Line) 棕線 / 木柵線 / 動物園—南港展覽館</span>
+            </div>
+
+            <div class="mrt-line-item">
+                <span class="mrt-dot" style="background-color: #FFA500;"></span>
+                <span class="other-line-text">Y 環狀線 (Circular Line) 環狀線 / 大坪林—新北產業園區</span>
+            </div>
+        </div>
+        
+        <div class="members-section">
+            <h3>製作團隊</h3>
+            <table class="info-table">
+                <thead>
+                    <tr>
+                        <th>學校</th>
+                        <td>中華科技大學 CUST</td>
+                    </tr>
+                    <tr>
+                        <th>課程</th>
+                        <td>網路多媒體設計</td>
+                    </tr>
+                    <tr>
+                        <th>指導老師</th>
+                        <td>林順萍</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>組員與職責</th>
+                        <td>
+                            <ul class="member-list">
+                                <li class="member-item">
+                                    <span class="name">謝宇富 113113015</span> 
+                                    <span class="role">負責統籌及網站整體設計</span>
+                                </li>
+                                <li class="member-item">
+                                    <span class="name">黃偉德 113113026</span> 
+                                    <span class="role">協助整理景點資訊</span>
+                                </li>
+                                <li class="member-item">
+                                    <span class="name">李育憲 113113043</span> 
+                                    <span class="role">協助整理美食圖片</span>
+                                </li>
+                                <li class="member-item">
+                                    <span class="name">黃承偉 113113046</span> 
+                                    <span class="role">協助整理交通資訊</span>
+                                </li>
+                                <li class="member-item">
+                                    <span class="name">潘厚任 113111017</span> 
+                                    <span class="role">協助整理文字內容</span>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+
+    <footer>
+        <p>台北捷運美食探索期末報告 - 中華科技大學 CUST</p>
+        <p>&copy; 2025. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // JavaScript 實現打字機效果 (保持不變)
+        function typeWriter(elementId, text, delay, nextFunction) {
+            let i = 0;
+            const targetElement = document.getElementById(elementId);
+            const cursor = targetElement.nextElementSibling;
+
+            if (!targetElement || !cursor) return;
+
+            targetElement.style.color = 'inherit';
+            targetElement.textContent = ''; 
+
+            function type() {
+                if (i < text.length) {
+                    targetElement.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, delay);
+                } else {
+                    cursor.classList.remove('blinking-cursor');
+                    cursor.style.opacity = 0;
+
+                    if (nextFunction) {
+                        setTimeout(nextFunction, 500); 
+                    }
+                }
+            }
+            type();
+        }
+
+        // 頁面載入後開始執行動畫
+        document.addEventListener('DOMContentLoaded', function() {
+            const h2Text = document.getElementById('h2-text').textContent;
+            const pText = document.getElementById('p-text').textContent;
+
+            // 1. 先執行標題動畫
+            typeWriter('h2-text', h2Text, 80, function() {
+                // 2. 標題動畫完成後，執行段落動畫
+                typeWriter('p-text', pText, 50, null);
+            });
+        });
+    </script>
+</body>
+</html>

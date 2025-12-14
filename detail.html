@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美食詳細介紹</title>
+    <style>
+        /* 基礎樣式 (大部分不變) */
+        body { font-family: '微軟正黑體', 'Arial', sans-serif; padding: 20px; background-color: #f4f4f4; }
+        h1 { color: #8A0000; text-align: center; margin-bottom: 30px; }
+        .food-item {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .food-item h2 {
+            color: #007BFF;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        /* 更改 CSS：讓返回連結群組居中並使用 flex 排列 */
+        .back-links-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px; /* 增加連結間的間隔 */
+            margin-top: 20px; 
+            font-size: 16px; 
+        }
+        .back-links-container a {
+            text-decoration: none;
+            color: #007BFF;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .back-links-container a:hover {
+            background-color: #e9e9e9;
+        }
+
+        /* --- 評價/介紹區塊 (星星/描述) --- */
+        .highlight-section {
+            padding: 15px;
+            background-color: #fff9f9; 
+            border-left: 5px solid #E91E63; 
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+        .highlight-title {
+            color: #E91E63; 
+            font-size: 1.1em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .highlight-title .stars {
+            color: gold; 
+            font-size: 1.2em;
+            margin-right: 8px;
+            letter-spacing: 2px; 
+        }
+        .highlight-description p {
+            margin: 0;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* --- 圖庫/地圖容器樣式 (已修改為資訊盒 + 地圖) --- */
+        .photo-gallery {
+            display: flex;
+            gap: 10px; /* 元素之間的間隔 */
+            margin: 15px auto;
+            justify-content: space-between;
+        }
+        .photo-gallery > * {
+            flex: 1 1 50%; /* 確保資訊區塊和地圖各佔 50% */
+            min-width: 0;
+        }
+
+        /* 如果只有單一元素，讓它佔滿寬度 */
+        .photo-gallery.single-element > * {
+            flex: 1 1 100%;
+        }
+
+        /* --- 新增的店家資訊區塊樣式 (取代圖片) --- */
+        .info-box {
+            padding: 15px;
+            background-color: #f0f8ff; /* 淺藍色背景，區分開來 */
+            border-radius: 6px;
+            border: 1px solid #d0e8f8;
+            height: 200px; /* 與地圖保持一致的高度 */
+            display: flex; 
+            flex-direction: column;
+            justify-content: flex-start;
+            line-height: 1.8; /* 增加行距，更易閱讀 */
+            color: #333;
+            font-size: 0.95em;
+        }
+        /* 確保 info-box 內的段落樣式 */
+        .info-box p {
+            margin: 5px 0;
+        }
+        /* 確保移除標題後，第一個項目也有足夠的上方間距 */
+        .info-box p:first-child {
+            /* 讓地址項目緊跟在新的 h4 (基本資訊) 標題下方 */
+            margin-top: 0; 
+        }
+        /* 新增基本資訊標題的樣式 */
+        .info-box h4 {
+            color: #007BFF;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        /* 嵌入地圖樣式 (高度已調整以配合資訊盒) */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 200px; /* 與文字區塊保持一致的高度 */
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 影片容器樣式 - 針對 MP4 影片的容器 (不變) */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 比例 */
+            height: 0;
+            overflow: hidden;
+            margin-top: 20px;
+            background-color: black;
+            border-radius: 6px;
+        }
+        .video-container video { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 6px; /* 保持圓角 */
+        }
+    </style>
+</head>
+<body>
+    <h1 id="station-title">美食介紹載入中...</h1>
+    
+    <div id="food-detail-container">
+    </div>
+    
+    <div class="back-links-container">
+        <a href="index.html">← 返回首頁</a> 
+        <a href="red_line_stations.html">← 返回站點列表</a> 
+    </div>
+
+    <script>
+        // ==========================================================
+        // 核心資料區塊 (所有 video_url 已修改為指向 images/ 資料夾)
+        // ==========================================================
+        const FOOD_DATA = {
+            // 象山站 (R02)
+            "xiangshan": {
+                "chinese_name": "象山站",
+                "foods": [
+                    {
+                        "id": 1,
+                        "name": "吳興街傳統早餐",
+                        "description": "初魚巧妙融合鐵板燒技藝與日本料理精隨，提供無菜單料理的套餐體驗，嚴選當季新鮮海陸食材，在板前現烹，帶來極致美味與視覺饗宴，是高CP值的日式鐵板燒首選。",
+                        "latitude": 25.03667,
+                        "longitude": 121.5667,
+                        "image_url": "images/xiangshan_1.jpg", 
+                        "map_embed_url": "https://www.google.com/maps/d/embed?mid=1N80m_0C3icRgqVQxdDIkcpDdu7vJuj0&ehbc=2E312F", 
+                        "video_url": "images/xiangshan.mp4", 
+                        "rating": "★★★★☆",
+                        // ✨ 請在這裡打字修改地址、時間、電話
+                        "address": "臺北市信義區松壽路9號6樓(新光三越A9)", 
+                        "hours": "星期一至星期日 12:00–14:00 17:30-21:30",
+                        "phone": "(02) 2366-0792"
+                    }
+                ]
+            },
+            // 台北101/世貿站 (R03)
+            "taipei101": {
+                "chinese_name": "台北101/世貿站",
+                "foods": [
+                    {
+                        "id": 1,
+                        "name": "邱記涼麵",
+                        "description": "邱記涼麵位於台北信義區吳興街，是人氣小吃，被譽為「台北前三名涼麵」。主打Q彈麵體與濃郁不膩的芝麻麻醬，蒜味可依喜好調整，搭配必點的綜合湯（三合一），是完美的傳統風味組合。",
+                        "latitude": 25.02654,
+                        "longitude": 121.56431,
+                        "image_url": "images/taipei101_1.jpg", 
+                        "map_embed_url": "https://www.google.com/maps/d/embed?mid=1NEgbeUMryeQv1OLa0eqpilVq3-c_oi8&ehbc=2E312F", 
+                        "video_url": "images/taipei101.mp4", 
+                        "rating": "★★★★☆",
+                        // ✨ 請在這裡打字修改地址、時間、電話
+                        "address": "臺北市信義區吳興街281巷1號",
+                        "hours": "星期二至星期日06:00–13:30；星期一(公休)",
+                        "phone": "(02) 2722-0354"
+                    }
+                ]
+            },
+            // 信義安和站 (R04)
+            "xinyianhe": {
+                "chinese_name": "信義安和站",
+                "foods": [
+                    {
+                        "id": 1,
+                        "name": "御品元冰火湯圓",
+                        "description": "御品元冰火湯圓主打「冷熱交融」的獨特吃法。將手工現煮的熱湯圓放在舖滿桂花蜜的清冰上，創造冰火奇妙口感。湯圓享用後，清冰淋上桂花蜜和檸檬汁，立刻變身酸甜清爽的桂花檸檬冰。。",
+                        "latitude": 25.03023,
+                        "longitude": 121.5554,
+                        "image_url": "images/xinyianhe_1.jpg", 
+                        "map_embed_url": "https://www.google.com/maps/d/embed?mid=1v-00CztsnpkoU66vkFT2_noerWGr8co&ehbc=2E312F", 
+                        "video_url": "images/xinyianhe.mp4", 
+                        "rating": "★★★★☆",
+                        // ✨ 請在這裡打字修改地址、時間、電話
+                        "address": "臺北市大安區通化街39巷50弄31號",
+                        "hours": "星期一至星期四 18:00–23:30；星期五18:00–24:00；星期六 17:30–24:00；星期日17:30–23:30",
+                        "phone": "0955861816"
+                    }
+                ]
+            },
+            // 大安站 (R05)
+            "daan": {
+                "chinese_name": "大安站",
+                "foods": [{
+                    "id": 1,
+                    "name": "饃饃噠心動肉夾饃（大安信義店)",
+                    "description": "饃饃噠心動肉夾饃（大安信義店）靠近捷運大安站，主打來自陝西的特色小吃肉夾饃。店內提供多種口味，是想快速解決一餐或嚐鮮的在地好選擇。",
+                    "latitude": 25.03313,
+                    "longitude": 121.5432,
+                    "image_url": "images/daan_1.jpg",
+                    "map_embed_url": "https://www.google.com/maps/d/embed?mid=1NxEfazkth3MQOqkSX-XqFlD1CaLSKnM&ehbc=2E312F", 
+                    "video_url": "images/daan.mp4", 
+                    "rating": "★★★★★",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "臺北市大安區信義路三段196號",
+                    "hours": "星期一至星期日11:00–19:30",
+                    "phone": "(02)2784-5089"
+                }]
+            },
+            // 大安森林公園站 (R06)
+            "daanforestpark": {
+                "chinese_name": "大安森林公園站",
+                "foods": [{
+                    "id": 1,
+                    "name": "森甜舖",
+                    "description": "森甜舖位在捷運大安森林公園站旁巷弄，專賣精緻法式甜點及常溫蛋糕。店面風格溫馨，品項多元，特別推薦在草莓季時前往，享受季節限定的美味。",
+                    "latitude": 25.03377,
+                    "longitude": 121.53428,
+                    "image_url": "images/daanforestpark_1.jpg",
+                    "map_embed_url": "https://www.google.com/maps/d/embed?mid=1frQ3MBH5wGc4wqi7FkHbGx54hZYuxdU&ehbc=2E312F", 
+                    "video_url": "images/Daan Forest Park.mp4", 
+                    "rating": "★★★★☆",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "臺北市大安區信義路三段25號1樓",
+                    "hours": "星期三至星期六12:00 - 18:00；星期日至星期二(公休)",
+                    "phone": "無"
+                }]
+            },
+            // 東門站 (R07)
+            "dongmen": {
+                "chinese_name": "東門站",
+                "foods": [{
+                    "id": 1,
+                    "name": "江記東門豆花",
+                    "description": "江記東門豆花隱身於東門市場內，是許多在地人喜歡的小店。店內只賣簡單幾種品項，以傳統手工豆花聞名，是許多人吃完正餐後的甜點選擇。",
+                    "latitude": 25.03478,
+                    "longitude": 121.52709,
+                    "image_url": "images/dongmen_1.jpg",
+                    "map_embed_url": "https://www.google.com/maps/d/embed?mid=1GWNOXKPZuBzyS5xiU2f6JdVEigDf-28&ehbc=2E312F", 
+                    "video_url": "images/dongmen.mp4", 
+                    "rating": "★★★★★",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "臺北市中正區金山南路一段142巷5號",
+                    "hours": "星期二 三 五 六 日07:30 - 15:00；星期一 四(公休)",
+                    "phone": "0968109709"
+                }]
+            },
+            // 中正紀念堂站 (R08)
+            "cksmemorialhall": {
+                "chinese_name": "中正紀念堂站",
+                "foods": [{
+                    "id": 1,
+                    "name": "金峰滷肉飯",
+                    "description": "金峰魯肉飯位於捷運中正紀念堂站附近，是台北很知名的魯肉飯店。用餐時段人潮眾多，經常需要拼桌，以外帶和高翻桌率著稱，價格實惠。。",
+                    "latitude": 25.03209,
+                    "longitude": 121.51853,
+                    "image_url": "images/cksmemorialhall_1.jpg",
+                    "map_embed_url": "https://www.google.com/maps/d/embed?mid=1OCDC1EEipyTCsKtOPqiOc_xRY7XbmDs&ehbc=2E312F", 
+                    "video_url": "images/cksmemorialhall.mp4", 
+                    "rating": "★★★☆☆",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "臺北市中正區羅斯福路一段10-1號",
+                    "hours": "星期二至星期六11:00 - 01:00；星期日11:00 - 23:00；星期一(公休))",
+                    "phone": "(02) 2321-1088"
+                }]
+            },
+            // 台大醫院站 (R09)
+            "ntuhospital": {
+                "chinese_name": "台大醫院站",
+                "foods": [{
+                    "id": 1,
+                    "name": "明星咖啡館",
+                    "description": "老字號的俄羅斯風格咖啡館，招牌俄羅斯軟糖。",
+                    "latitude": 25.04160,
+                    "longitude": 121.51780,
+                    "image_url": "images/ntuhospital_1.jpg",
+                    "map_embed_url": "YOUR_NTUHOSPITAL_MAP_EMBED_URL", 
+                    "video_url": "images/ntuhospital_1.mp4", 
+                    "rating": "★★★★☆",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "台北市中正區武昌街一段5號2樓",
+                    "hours": "10:30 - 21:30",
+                    "phone": "(02) 2381-1234"
+                }]
+            },
+            // 台北車站站 (R10)
+            "taipeimainstation": {
+                "chinese_name": "台北車站站",
+                "foods": [{
+                    "id": 1,
+                    "name": "後車站六洲麵線",
+                    "description": "六洲麵線位於捷運台北車站Y13出口附近，是一家高人氣的銅板價小吃店。專賣傳統麵線，是大台北地區許多人路過會想來一碗的經典街頭美食。",
+                    "latitude": 25.04984,
+                    "longitude": 121.51457,
+                    "image_url": "images/taipeimainstation_1.jpg",
+                    "map_embed_url": "https://www.google.com/maps/d/embed?mid=1FR-acCuHSOuINWniZSSUiZmvQr_eKFk&ehbc=2E312F", 
+                    "video_url": "images/taipeimainstation.mp4", 
+                    "rating": "★★★☆☆",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "臺北市大同區太原路22巷4號",
+                    "hours": "星期一至星期六11:30 - 19:00 ；星期日(公休)",
+                    "phone": "0937021363"
+                }]
+            },
+            // 中山站 (R11)
+            "zhongshan": {
+                "chinese_name": "中山站",
+                "foods": [{
+                    "id": 1,
+                    "name": "麵屋 千雲",
+                    "description": "麵屋千雲位於捷運中山站附近，以濃厚的雞白湯拉麵為招牌。店面採日式木質外觀，配上暖色燈光與燈籠，環境溫馨，是許多拉麵愛好者的朝聖地。",
+                    "latitude": 25.05018,
+                    "longitude": 121.52519,
+                    "image_url": "images/zhongshan_1.jpg",
+                    "map_embed_url": "https://www.google.com/maps/d/embed?mid=18o017lag4ydSoSmlbGNqSO5oGq7xV4w&ehbc=2E312F", 
+                    "video_url": "images/zhongshan.mp4", 
+                    "rating": "★★★★☆",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "臺北市中山區林森北路105-1號",
+                    "hours": "星期一至星期日11:00 - 04:00",
+                    "phone": "無"
+                }]
+            },
+            // 雙連站 (R12)
+            "shuanglian": {
+                "chinese_name": "雙連站",
+                "foods": [{
+                    "id": 1,
+                    "name": "誠屋拉麵",
+                    "description": "誠屋拉麵創立於 1999 年的大阪，是全球分店破百間的知名日式拉麵品牌。店家以特製壓力鍋熬煮的「牛骨白湯拉麵」為招牌，並同時提供雞骨醬油等多元口味，堅持提供與日本同步的道地風味。。",
+                    "latitude": 25.0573,
+                    "longitude": 121.51886,
+                    "image_url": "images/shuanglian_1.jpg",
+                    "map_embed_url": "https://www.google.com/maps/d/embed?mid=1XpA8Em5shmgRLBUqIimqJs5MkHnfFVg&ehbc=2E312F", 
+                    "video_url": "images/shuanglian.mp4", 
+                    "rating": "★★★★☆",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "臺北市大同區民生西路142號",
+                    "hours": "星期一至星期日11:00 - 22:00",
+                    "phone": "(02) 2521-8159"
+                }]
+            },
+            // 民權西路站 (R13)
+            "minquanwestroad": {
+                "chinese_name": "民權西路站",
+                "foods": [{
+                    "id": 1,
+                    "name": "晴光市場小吃群",
+                    "description": "充滿傳統風味的市場，有紅豆餅、麻油雞和丁香豆花等必吃美食。",
+                    "latitude": 25.06200,
+                    "longitude": 121.51800,
+                    "image_url": "images/minquanwestroad_1.jpg",
+                    "map_embed_url": "YOUR_MINQUANWESTROAD_MAP_EMBED_URL", 
+                    "video_url": "images/minquanwestroad_1.mp4", 
+                    "rating": "★★★☆☆",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "台北市中山區雙城街10巷",
+                    "hours": "10:00 - 20:00",
+                    "phone": "無固定電話"
+                }]
+            },
+            // 圓山站 (R14)
+            "yuanshan": {
+                "chinese_name": "圓山站",
+                "foods": [{
+                    "id": 1,
+                    "name": "花博公園市集美食",
+                    "description": "周邊常有假日市集和活動，可以找到各式特色攤位和餐車美食。",
+                    "latitude": 25.06940,
+                    "longitude": 121.52120,
+                    "image_url": "images/yuanshan_1.jpg",
+                    "map_embed_url": "YOUR_YUANSHAN_MAP_EMBED_URL", 
+                    "video_url": "images/yuanshan_1.mp4", 
+                    "rating": "★★★☆☆",
+                    // ✨ 請在這裡打字修改地址、時間、電話
+                    "address": "台北市中山區玉門街1號 (集食行樂廣場)",
+                    "hours": "依活動時間變動",
+                    "phone": "無固定電話"
+                }]
+            }
+        };
+
+        // --- 輔助函式：處理本地 MP4 影片並產生 <video> 標籤 (不變) ---
+        function getVideoContent(localPath) {
+            if (!localPath || localPath.trim() === "") return '';
+            
+            // 生成 HTML5 <video> 標籤，設定自動播放 (autoplay)、靜音 (muted) 和循環 (loop)
+            return `
+                <h3 style="color:#555; margin-top: 30px;">🎬 美食影片介紹 (MP4)</h3>
+                <div class="video-container">
+                    <video controls autoplay muted loop>
+                        <source src="${localPath}" type="video/mp4">
+                        您的瀏覽器不支援內嵌影片。
+                    </video>
+                </div>
+            `;
+        }
+        
+        // --- 主要載入邏輯 (已確保包含基本資訊標題) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const stationKey = urlParams.get('station');
+            const titleElement = document.getElementById('station-title');
+            const container = document.getElementById('food-detail-container');
+
+            if (!stationKey) {
+                titleElement.textContent = '❌ 錯誤：請從列表頁選擇站點。';
+            } else {
+                const stationData = FOOD_DATA[stationKey];
+
+                if (stationData && stationData.foods.length > 0) {
+                    titleElement.textContent = `🍜 ${stationData.chinese_name} 推薦美食`;
+                    
+                    const food = stationData.foods[0]; 
+                    const videoContent = getVideoContent(food.video_url); 
+
+                    // --- 店家資訊與地圖邏輯 (取代圖片) ---
+                    let photoGalleryHTML = '';
+                    // 檢查是否有地圖嵌入連結
+                    const hasMap = food.map_embed_url && food.map_embed_url.trim() !== "" && !food.map_embed_url.includes("YOUR_");
+                    // 檢查是否有任一個自訂資訊欄位
+                    const hasInfo = food.address || food.hours || food.phone; 
+
+                    if (hasMap || hasInfo) {
+                        // 這裡的大標題保留，因為它在 .food-item 外部
+                        photoGalleryHTML += `<h3 style="color:#555; margin-top: 30px;">🏠 店家資訊與位置</h3>`;
+                        
+                        let elements = '';
+                        let isSingle = !(hasMap && hasInfo); // 只有當資訊和地圖都存在時，才是雙元素
+
+                        // 左側：動態載入 FOOD_DATA 中的地址、時間、電話 (✨ 已重新加入基本資訊標題)
+                        const infoBoxHTML = `
+                            <div class="info-box">
+                                <h4>店家資訊</h4>
+                                <p><strong>📍 地址：</strong> ${food.address || '未提供地址'}</p>
+                                <p><strong>⏰ 營業時間：</strong> ${food.hours || '未提供營業時間'}</p>
+                                <p><strong>📞 連絡電話：</strong> ${food.phone || '未提供聯絡電話'}</p>
+                            </div>
+                        `;
+
+                        if (hasInfo && hasMap) {
+                            // 雙元素：資訊區塊 + 地圖
+                            elements = `
+                                ${infoBoxHTML}
+                                <div class="map-container">
+                                    <iframe src="${food.map_embed_url}" allowfullscreen></iframe>
+                                </div>
+                            `;
+                        } else if (hasInfo) {
+                            // 單元素：只有資訊區塊
+                            elements = infoBoxHTML;
+                            isSingle = true;
+                        } else if (hasMap) {
+                            // 單元素：只有地圖
+                            elements = `
+                                <div class="map-container">
+                                    <iframe src="${food.map_embed_url}" allowfullscreen></iframe>
+                                </div>
+                            `;
+                            isSingle = true;
+                        }
+
+                        photoGalleryHTML += `
+                            <div class="photo-gallery ${isSingle ? 'single-element' : ''}">
+                                ${elements}
+                            </div>
+                        `;
+                    }
+                    // --- /店家資訊與地圖邏輯 ---
+                    
+                    const foodDiv = document.createElement('div');
+                    foodDiv.className = 'food-item';
+                    foodDiv.innerHTML = `
+                        <h2>${food.name}</h2>
+                        
+                        <div class="highlight-section">
+                            <div class="highlight-title">
+                                <span class="stars">${food.rating || 'N/A'}</span> 評價
+                            </div>
+                            <div class="highlight-description">
+                                <p><strong>店家介紹：</strong> ${food.description}</p>
+                            </div>
+                        </div>
+
+                        ${photoGalleryHTML}
+                        
+                        ${videoContent} 
+
+                        <p style="margin-top: 25px;"><strong>地圖座標：</strong> ${food.latitude}, ${food.longitude}</p>
+                    `;
+                    container.appendChild(foodDiv);
+                    
+                } else {
+                    titleElement.textContent = `⚠️ 找不到 ${stationKey} 站的推薦美食。`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
